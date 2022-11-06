@@ -23,7 +23,6 @@ public class TodoController {
     
     @GetMapping()
     ArrayList<TodoModel> todoList(@RequestParam(required = false, defaultValue = "") String sortBy, 
-    @RequestParam(required = false, defaultValue = "") String filterBy,
     @RequestParam(required = false, defaultValue = "") String direction, 
     @RequestParam(required = false, defaultValue = "0") Integer offset) {
         
