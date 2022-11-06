@@ -3,7 +3,6 @@ package com.project.springbootbackend.models;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class TodoModel {
 
@@ -11,21 +10,20 @@ public class TodoModel {
     private Long id;
     private String name;
     private Integer priority;
-    private LocalDateTime startDate;
+    private LocalDateTime dueDate;
     private Boolean completed;
 
     // Constructor
-    public TodoModel(Long id, String name, Integer priority, LocalDateTime startDate, Boolean completed) {
+    public TodoModel(Long id, String name, Integer priority, LocalDateTime dueDate, Boolean completed) throws Exception {
         this.id = id;
         this.name = name;
         this.priority = priority;
         this.completed = completed;
-        this.startDate = startDate;
-        try {
-            validate();
-        } catch (Exception e) {
-            e.printStackTrace();
-        } // Validate variables before constructing
+        this.dueDate = dueDate;
+        try{
+        validate();}catch(Exception e){
+          e.printStackTrace();
+        }
     } 
     
     // Variable getters and setters
@@ -53,12 +51,12 @@ public class TodoModel {
         this.priority = priority;
     }
 
-    public LocalDateTime getstartDate() {
-        return startDate;
+    public LocalDateTime getdueDate() {
+        return dueDate;
     }
 
-    public void startDate(LocalDateTime startDate) {
-        this.startDate = startDate;
+    public void setdueDate(LocalDateTime dueDate) {
+        this.dueDate = dueDate;
     }
 
     public Boolean getCompleted() {
@@ -76,25 +74,28 @@ public class TodoModel {
         // Initialize array with all our errors if any.
         List<String> errors = new ArrayList<>();
 
-        // Ensure our id and name is not null
-        ensureNotNull(id, "Id is null", errors);
+        // Ensure our name is not null
         ensureNotNull(name, "Name is null", errors);
         
-        // Check if our todo name is not empty.
+        // Check if our todo name is not empty and length between 1 and 120.
         if (!hasContent(name)) {
           errors.add("Name has no content.");
         }
 
+        // Priority 1 = High, 2 = Medium, 3 = Low, value limiter
+        if (priority < 1 || priority > 3 || priority == null){
+          errors.add("Priority must be an Integer in range from 1 to 3");
+        }
+
         // We limit the ranges of start and end of our dateTime varible.
-        boolean passes = ensureNotNull(startDate, "Date purchased is null.", errors);
-        if (passes) {
-          LocalDateTime START = LocalDateTime.of(1900, 1, 1, 00,00,00);
-          LocalDateTime END = LocalDateTime.of(2099, 12, 31, 23,59,59);
-          if (startDate.isBefore(START) || startDate.isAfter(END)) {
-            errors.add("Date purchased is outside the normal range: " + START + ".." + END);
+        LocalDateTime START = LocalDateTime.of(1900, 1, 1, 00,00,00);
+        LocalDateTime END = LocalDateTime.of(2099, 12, 31, 23,59,59);
+        if (dueDate != null){
+          if (dueDate.isBefore(START) || dueDate.isAfter(END)) {
+            errors.add("Date is outside the normal range: " + START + ".." + END);
           }
         }
-        
+          
         // Check if our errors array is empty, if false, throw the exceptions.
         if (!errors.isEmpty()) {
           Exception ex = new Exception();
@@ -118,6 +119,7 @@ public class TodoModel {
 
       //  Returns true only if a string has content.
       private boolean hasContent(String string) {
-        return (string != null && string.trim().length() > 0);
+        return (string != null && string.trim().length() > 0 && string.trim().length() < 120);
       }
+
 }
