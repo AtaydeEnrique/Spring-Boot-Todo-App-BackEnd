@@ -2,7 +2,6 @@ package com.project.springbootbackend.controllers;
 
 import java.util.ArrayList;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,13 +19,15 @@ import com.project.springbootbackend.services.TodoService;
 @RestController
 @CrossOrigin(origins = "http://localhost:8080")
 @RequestMapping(path = "todos")
-public class TodoController {
-    
-    @Autowired
+public class TodoController {   
     
     @GetMapping()
-    ArrayList<TodoModel> all() {
-        return TodoService.getAllTodos();
+    ArrayList<TodoModel> todoList(@RequestParam(required = false, defaultValue = "") String sortBy, 
+    @RequestParam(required = false, defaultValue = "") String filterBy,
+    @RequestParam(required = false, defaultValue = "") String direction, 
+    @RequestParam(required = false, defaultValue = "0") Integer offset) {
+        
+        return TodoService.getAllTodos(sortBy,direction,offset);
     }
 
     @PostMapping()

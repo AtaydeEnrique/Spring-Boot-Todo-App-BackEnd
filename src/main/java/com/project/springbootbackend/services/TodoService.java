@@ -2,6 +2,8 @@ package com.project.springbootbackend.services;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -16,8 +18,33 @@ public class TodoService {
     private static Long currentId = 1L;
 
 
-    public static ArrayList<TodoModel> getAllTodos() {
+    public static ArrayList<TodoModel> getAllTodos(String sortBy, String direction, int offset) {
+        // Filtering methods ----------- Start
+        
+        // Filtering methods ----------- End
+        // Sort by methods ------------- Start
+        if(sortBy.equals("priority")){
+            if(direction.equals("desc")){
+                todos.sort(Comparator.comparing(a -> a.getPriority()));
+            } else if(direction.equals("asc")){
+                todos.sort(Collections.reverseOrder(Comparator.comparing(a -> a.getPriority())));
+            }
+        } else if( sortBy.equals("date")){
+            if(direction.equals("desc")){
+                todos.sort(Comparator.comparing(
+                    a -> a.getdueDate() == null ? 
+                    null :
+                    a.getdueDate() , Comparator.nullsLast(Comparator.naturalOrder())));
+            } else if(direction.equals("asc")){
+                todos.sort(Comparator.comparing(
+                    a -> a.getdueDate() == null ? 
+                    null :
+                    a.getdueDate() , Comparator.nullsLast(Comparator.reverseOrder())));
+            }
+        // Sort by methods ------------- End 
+        }
         return todos;
+
     }
 
     public static TodoModel addTodo( String name, Integer priority, LocalDateTime dueDate) throws Exception{
