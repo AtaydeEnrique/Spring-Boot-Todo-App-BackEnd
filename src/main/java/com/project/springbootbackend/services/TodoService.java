@@ -14,36 +14,37 @@ import com.project.springbootbackend.models.TodoModel;
 public class TodoService {
     
     @Autowired
-    static final ArrayList<TodoModel> todos = new ArrayList<>(); 
+    static final ArrayList<TodoModel> todos = new ArrayList<TodoModel>(); 
     private static Long currentId = 1L;
 
 
     public static ArrayList<TodoModel> getAllTodos(String sortBy, String direction, int offset) {
+        ArrayList<TodoModel> processedTodos = new ArrayList<TodoModel>(todos);
         // Filtering methods ----------- Start
         
         // Filtering methods ----------- End
         // Sort by methods ------------- Start
         if(sortBy.equals("priority")){
             if(direction.equals("desc")){
-                todos.sort(Comparator.comparing(a -> a.getPriority()));
+                processedTodos.sort(Comparator.comparing(a -> a.getPriority()));
             } else if(direction.equals("asc")){
-                todos.sort(Collections.reverseOrder(Comparator.comparing(a -> a.getPriority())));
+                processedTodos.sort(Collections.reverseOrder(Comparator.comparing(a -> a.getPriority())));
             }
         } else if( sortBy.equals("date")){
             if(direction.equals("desc")){
-                todos.sort(Comparator.comparing(
+                processedTodos.sort(Comparator.comparing(
                     a -> a.getdueDate() == null ? 
                     null :
                     a.getdueDate() , Comparator.nullsLast(Comparator.naturalOrder())));
             } else if(direction.equals("asc")){
-                todos.sort(Comparator.comparing(
+                processedTodos.sort(Comparator.comparing(
                     a -> a.getdueDate() == null ? 
                     null :
                     a.getdueDate() , Comparator.nullsLast(Comparator.reverseOrder())));
             }
         // Sort by methods ------------- End 
         }
-        return todos;
+        return processedTodos;
 
     }
 
