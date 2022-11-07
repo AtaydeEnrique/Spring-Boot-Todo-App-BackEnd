@@ -42,14 +42,31 @@ public class TodoController {
     }
 
     @PutMapping(path = "{id}")
-    TodoModel replaceTodo(@RequestBody TodoModel newTodo, @PathVariable Long id) throws Exception {
-        System.out.println(newTodo);
+    TodoModel updateTodo(@RequestBody TodoModel newTodo, @PathVariable Long id) throws Exception {
         try{
             return TodoService.updateTodo(id, newTodo);
         }catch(Exception e){
             throw e;
         }
-  }
+    }
+
+    @PutMapping(path = "{id}/done")
+    void updateTodoDone(@PathVariable Long id) throws Exception {
+        try{
+            TodoService.updateTodoDone(id);
+        }catch(Exception e){
+            throw e;
+        }
+    }
+
+    @PutMapping(path = "{id}/undone")
+    void updateTodoUnone(@PathVariable Long id) throws Exception {
+        try{
+            TodoService.updateTodoUndone(id);
+        }catch(Exception e){
+            throw e;
+        }
+    }
 
     @DeleteMapping(path = "{id}")
     void deleteTodo(@PathVariable Long id) {

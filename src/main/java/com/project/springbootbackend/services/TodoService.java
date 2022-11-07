@@ -33,7 +33,9 @@ public class TodoService {
 
     public static ArrayList<TodoModel> getAllTodos(String sortBy, String filterBy, String direction, int offset) {
         String[] filters = filterBy.split(",");
-        var result = todos; /*  Pointer to our database
+        ArrayList<TodoModel> reference = new ArrayList<>(todos);
+        var result = reference;
+        /*  This copies (by reference) the elements in the original list to the new list
         This will let us filter/sort our database without modifying it*/
 
         // Filtering methods ----------- Start
@@ -108,10 +110,31 @@ public class TodoService {
                 todo.setName(newTodo.getName());
                 todo.setPriority(newTodo.getPriority());
                 todo.setdueDate(newTodo.getdueDate());
-                todo.setCompleted(newTodo.getCompleted());
             }
         }
         return newTodo;
+    }
+
+    public static void updateTodoDone(Long id){
+        for (TodoModel todo : todos) {
+            if (todo.getId().equals(id)) {
+                var done = todo.getCompleted();
+                if (!done){
+                    todo.setCompleted(true);
+                }
+            }
+        }
+    }
+
+    public static void updateTodoUndone(Long id){
+        for (TodoModel todo : todos) {
+            if (todo.getId().equals(id)) {
+                var done = todo.getCompleted();
+                if (done){
+                    todo.setCompleted(false);
+                }
+            }
+        }
     }
 
     public static void deleteTodo(Long id){
