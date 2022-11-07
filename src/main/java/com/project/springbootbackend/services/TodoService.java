@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -18,11 +19,9 @@ public class TodoService {
     private static Long currentId = 1L;
 
 
-    public static ArrayList<TodoModel> getAllTodos(String sortBy, String direction, int offset) {
+    public static ArrayList<TodoModel> getAllTodos(String sortBy, String filterBy, String direction, int offset) {
         ArrayList<TodoModel> processedTodos = new ArrayList<TodoModel>(todos);
-        // Filtering methods ----------- Start
-        
-        // Filtering methods ----------- End
+        String[] filters = filterBy.split(",");
         // Sort by methods ------------- Start
         if(sortBy.equals("priority")){
             if(direction.equals("desc")){
@@ -42,10 +41,33 @@ public class TodoService {
                     null :
                     a.getdueDate() , Comparator.nullsLast(Comparator.reverseOrder())));
             }
-        // Sort by methods ------------- End 
         }
-        return processedTodos;
-
+        // Sort by methods ------------- End 
+        // Filtering methods ----------- Start
+        // Filter name if any filter
+        var result = processedTodos;
+        System.out.println(filters.length);
+        if(filters.length > 0){
+        if(!filters[0].isEmpty() && !filters[0].equals("NoF")){
+            result =  (ArrayList<TodoModel>)  processedTodos.stream()
+                    .filter(a -> a.getName().contains(filters[0]))
+                    .collect(Collectors.toList());
+        }
+        // Filter priority if any filter
+        if(!filters[1].isEmpty() && !filters[1].equals("NoF")){
+           result =  (ArrayList<TodoModel>) processedTodos.stream()
+                    .filter(a -> a.getPriority() == Integer.parseInt(filters[1]))
+                    .collect(Collectors.toList());
+        }
+        // Filter completed if any filter
+        if(!filters[2].isEmpty() && !filters[2].equals("NoF")){
+            result =  (ArrayList<TodoModel>) processedTodos.stream()
+                    .filter(a -> a.getCompleted() == Boolean.parseBoolean(filters[2]))
+                    .collect(Collectors.toList());
+         }}
+        // // Filtering methods ----------- End
+        
+        return result;
     }
 
     public static TodoModel addTodo( String name, Integer priority, LocalDateTime dueDate) throws Exception{

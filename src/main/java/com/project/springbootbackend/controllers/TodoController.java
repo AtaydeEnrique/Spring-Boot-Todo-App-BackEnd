@@ -22,11 +22,12 @@ import com.project.springbootbackend.services.TodoService;
 public class TodoController {   
     
     @GetMapping()
-    ArrayList<TodoModel> todoList(@RequestParam(required = false, defaultValue = "") String sortBy, 
+    ArrayList<TodoModel> todoList(@RequestParam(required = false, defaultValue = "") String sortBy,
+    @RequestParam(required = false, defaultValue = ",,") String filterBy,  
     @RequestParam(required = false, defaultValue = "") String direction, 
     @RequestParam(required = false, defaultValue = "0") Integer offset) {
         
-        return TodoService.getAllTodos(sortBy,direction,offset);
+        return TodoService.getAllTodos(sortBy, filterBy, direction,offset);
     }
 
     @PostMapping()
