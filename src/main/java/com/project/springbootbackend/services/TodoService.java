@@ -22,6 +22,7 @@ public class TodoService {
     static final ArrayList<TodoModel> todos = new ArrayList<TodoModel>();
     static final Map<String, Object> info = new HashMap<>();
     static final Map<String, Double> averages = new HashMap<>(Map.of(
+        "totalAv", 0.0,
         "lowAv", 0.0, 
         "medAv", 0.0,
         "hiAv", 0.0
@@ -155,11 +156,13 @@ public class TodoService {
         int totalLow = 0;
         int totalMed = 0;
         int totalHi = 0;
+        int totalAv = 0;
         double toSum;
 
         averages.put("hiAv",0.0);
         averages.put("medAv",0.0);
         averages.put("lowAv",0.0);
+        averages.put("totalAv",0.0);
 
         for (TodoModel todo : todos) {
             switch(todo.getPriority()){
@@ -167,6 +170,8 @@ public class TodoService {
                     if(todo.getCompletedDate() != null){
                         toSum = ChronoUnit.SECONDS.between(todo.getCreatedDate(), todo.getCompletedDate());
                         totalHi++;
+                        totalAv++;
+                        averages.put("totalAv", averages.get("totalAv") + toSum);
                         averages.put("hiAv", averages.get("hiAv") + toSum);
                     }
                     
@@ -175,6 +180,8 @@ public class TodoService {
                     if(todo.getCompletedDate() != null){
                         toSum = ChronoUnit.SECONDS.between(todo.getCreatedDate(), todo.getCompletedDate());
                         totalMed++;
+                        totalAv++;
+                        averages.put("totalAv", averages.get("totalAv") + toSum);
                         averages.put("medAv", averages.get("medAv") + toSum);
                     }
                     
@@ -183,13 +190,17 @@ public class TodoService {
                     if(todo.getCompletedDate() != null){
                         toSum = ChronoUnit.SECONDS.between(todo.getCreatedDate(), todo.getCompletedDate());
                         totalLow++;
+                        totalAv++;
+                        averages.put("totalAv", averages.get("totalAv") + toSum);
                         averages.put("lowAv", averages.get("lowAv") + toSum);
 
                     }
                     
                     break;
             }
-
+            if(averages.get("totalAv") != 0.0){
+                averages.put("totalAv", averages.get("totalAv") / totalAv);
+            }
             if(averages.get("hiAv") != 0.0){
                 averages.put("hiAv", averages.get("hiAv") / totalHi);
             }
