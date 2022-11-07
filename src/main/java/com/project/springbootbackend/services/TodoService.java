@@ -1,6 +1,7 @@
 package com.project.springbootbackend.services;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -91,13 +92,13 @@ public class TodoService {
             return result;
         }else{
             info.put("totalTodos", result.size());
-            info.put("totalPages", (result.size() < 10 ? 1 : (Math.ceil((double)result.size()/10))));
+            info.put("totalPages", (result.size() < 10 ? 1 :(int) (Math.ceil((double)result.size()/10))));
             return new ArrayList<TodoModel>(result.subList(start, end));
         }
     }
 
     public static TodoModel addTodo( String name, Integer priority, LocalDateTime dueDate) throws Exception{
-        TodoModel newTodo = new TodoModel(currentId, name, priority, dueDate, false);
+        TodoModel newTodo = new TodoModel(currentId, name, priority, LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS), dueDate, null, false);
         currentId++;
         todos.add(newTodo);
         return newTodo;

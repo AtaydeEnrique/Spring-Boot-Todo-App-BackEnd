@@ -11,21 +11,29 @@ public class TodoModel {
     private String name;
     private Integer priority;
     private LocalDateTime dueDate;
+    private LocalDateTime createdDate;
+    private LocalDateTime completedDate;
     private Boolean completed;
 
     // Constructor
-    public TodoModel(Long id, String name, Integer priority, LocalDateTime dueDate, Boolean completed) throws Exception {
+    public TodoModel(Long id, String name, Integer priority, 
+                    LocalDateTime createdDate, LocalDateTime dueDate, 
+                    LocalDateTime completedDate, Boolean completed) throws Exception {
+                      
         this.id = id;
         this.name = name;
         this.priority = priority;
-        this.completed = completed;
+        this.createdDate = createdDate;
         this.dueDate = dueDate;
+        this.completedDate = completedDate;
+        this.completed = completed;
+        
         try{
         validate();}catch(Exception e){
           e.printStackTrace();
         }
     } 
-    
+
     // Variable getters and setters
     public Long getId() {
         return id;
@@ -59,6 +67,22 @@ public class TodoModel {
         this.dueDate = dueDate;
     }
 
+    public LocalDateTime getCreatedDate() {
+      return createdDate;
+    }
+
+    public void setCreatedDate(LocalDateTime createdDate) {
+      this.createdDate = createdDate;
+    }
+
+    public LocalDateTime getCompletedDate() {
+      return completedDate;
+    }
+
+    public void setCompletedDate(LocalDateTime completedDate) {
+      this.completedDate = completedDate;
+    }
+
     public Boolean getCompleted() {
         return completed;
     }
@@ -87,12 +111,24 @@ public class TodoModel {
           errors.add("Priority must be an Integer in range from 1 to 3");
         }
 
-        // We limit the ranges of start and end of our dateTime varible.
+
+        // We limit the ranges of of our completed Time varible.
         LocalDateTime START = LocalDateTime.of(1900, 1, 1, 00,00,00);
         LocalDateTime END = LocalDateTime.of(2099, 12, 31, 23,59,59);
         if (dueDate != null){
           if (dueDate.isBefore(START) || dueDate.isAfter(END)) {
             errors.add("Date is outside the normal range: " + START + ".." + END);
+          }
+        }
+
+        // We limit the completed date to be always after created date.
+        LocalDateTime FINISH = LocalDateTime.of(2099, 12, 31, 23,59,59);
+        if (completedDate != null){
+          if (completedDate.isBefore(createdDate)) {
+            errors.add("Compled Date cant be before your creation date");
+          }
+          if(completedDate.isAfter(FINISH)){
+            errors.add("Completition date cant be outside range: " + FINISH);
           }
         }
           
