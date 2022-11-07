@@ -4,6 +4,9 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,59 +18,80 @@ import com.project.springbootbackend.models.TodoModel;
 public class TodoService {
     
     @Autowired
-    static final ArrayList<TodoModel> todos = new ArrayList<TodoModel>(); 
+    static final ArrayList<TodoModel> todos = new ArrayList<TodoModel>();
+    static final Map<String, Object> info = new HashMap<>();
+    static final Map<String, Object> averages = Map.of(
+        "lowAv", 0, 
+        "medAv", 0,
+        "hiAv", 0
+    );
+    
+
+    
     private static Long currentId = 1L;
 
 
     public static ArrayList<TodoModel> getAllTodos(String sortBy, String filterBy, String direction, int offset) {
-        ArrayList<TodoModel> processedTodos = new ArrayList<TodoModel>(todos);
         String[] filters = filterBy.split(",");
+        var result = todos; /*  Pointer to our database
+        This will let us filter/sort our database without modifying it*/
+
+        // Filtering methods ----------- Start
+
+        // Filter name if any filter
+        if(filters.length > 0){
+            if(!filters[0].isEmpty() && !filters[0].equals("NoF")){
+                result =  (ArrayList<TodoModel>)  result.stream()
+                        .filter(a -> a.getName().toLowerCase().contains(filters[0].toLowerCase()))
+                        .collect(Collectors.toList());
+            }
+            // Filter priority if any filter
+            if(!filters[1].isEmpty() && !filters[1].equals("NoF")){
+                result = (ArrayList<TodoModel>) result.stream()
+                        .filter(a -> a.getPriority() == Integer.parseInt(filters[1]))
+                        .collect(Collectors.toList());
+            }
+            // Filter completed if any filter
+            if(!filters[2].isEmpty() && !filters[2].equals("NoF")){
+                result =  (ArrayList<TodoModel>) result.stream()
+                        .filter(a -> a.getCompleted() == Boolean.parseBoolean(filters[2]))
+                        .collect(Collectors.toList());
+             }}
+        // Filtering methods ----------- End
+
         // Sort by methods ------------- Start
         if(sortBy.equals("priority")){
             if(direction.equals("desc")){
-                processedTodos.sort(Comparator.comparing(a -> a.getPriority()));
+                result.sort(Comparator.comparing(a -> a.getPriority()));
             } else if(direction.equals("asc")){
-                processedTodos.sort(Collections.reverseOrder(Comparator.comparing(a -> a.getPriority())));
+                result =  (ArrayList<TodoModel>) todos.stream().sorted(Collections.reverseOrder(Comparator.comparing(a -> a.getPriority()))).collect(Collectors.toList());
             }
         } else if( sortBy.equals("date")){
             if(direction.equals("desc")){
-                processedTodos.sort(Comparator.comparing(
+                result.sort(Comparator.comparing(
                     a -> a.getdueDate() == null ? 
                     null :
                     a.getdueDate() , Comparator.nullsLast(Comparator.naturalOrder())));
             } else if(direction.equals("asc")){
-                processedTodos.sort(Comparator.comparing(
+                result.sort(Comparator.comparing(
                     a -> a.getdueDate() == null ? 
                     null :
                     a.getdueDate() , Comparator.nullsLast(Comparator.reverseOrder())));
             }
         }
         // Sort by methods ------------- End 
-        // Filtering methods ----------- Start
-        // Filter name if any filter
-        var result = processedTodos;
-        System.out.println(filters.length);
-        if(filters.length > 0){
-        if(!filters[0].isEmpty() && !filters[0].equals("NoF")){
-            result =  (ArrayList<TodoModel>)  processedTodos.stream()
-                    .filter(a -> a.getName().contains(filters[0]))
-                    .collect(Collectors.toList());
-        }
-        // Filter priority if any filter
-        if(!filters[1].isEmpty() && !filters[1].equals("NoF")){
-           result =  (ArrayList<TodoModel>) processedTodos.stream()
-                    .filter(a -> a.getPriority() == Integer.parseInt(filters[1]))
-                    .collect(Collectors.toList());
-        }
-        // Filter completed if any filter
-        if(!filters[2].isEmpty() && !filters[2].equals("NoF")){
-            result =  (ArrayList<TodoModel>) processedTodos.stream()
-                    .filter(a -> a.getCompleted() == Boolean.parseBoolean(filters[2]))
-                    .collect(Collectors.toList());
-         }}
-        // // Filtering methods ----------- End
         
-        return result;
+        // Pagination
+        int start = offset * 10;
+        int end = ((result.size() < 10 * (offset + 1)) ? result.size() : 10 * (offset + 1));
+        
+        if(result.size() == 0){
+            return result;
+        }else{
+            info.put("totalTodos", result.size());
+            info.put("totalPages", (result.size() < 10 ? 1 : (Math.ceil((double)result.size()/10))));
+            return new ArrayList<TodoModel>(result.subList(start, end));
+        }
     }
 
     public static TodoModel addTodo( String name, Integer priority, LocalDateTime dueDate) throws Exception{
@@ -87,11 +111,28 @@ public class TodoService {
                 todo.setCompleted(newTodo.getCompleted());
             }
         }
-        
         return newTodo;
     }
 
     public static void deleteTodo(Long id){
         todos.removeIf(curr -> curr.getId().equals(id));
     }
+
+    public static Object getInfo(){
+        info.put("averages", averages);
+        return info;
+    }
+
+    public static void generateTest() throws Exception{
+        addTodo(String.format("Test %s ", currentId), ThreadLocalRandom.current().nextInt(1, 3 + 1), LocalDateTime.parse(String.format("201%s-12-30T19:34:50.63", ThreadLocalRandom.current().nextInt(0, 9 + 1))));
+        addTodo(String.format("Test %s ", currentId), ThreadLocalRandom.current().nextInt(1, 3 + 1), LocalDateTime.parse(String.format("201%s-12-30T19:34:50.63", ThreadLocalRandom.current().nextInt(0, 9 + 1))));
+        addTodo(String.format("Test %s ", currentId), ThreadLocalRandom.current().nextInt(1, 3 + 1), null);
+        addTodo(String.format("Test %s ", currentId), ThreadLocalRandom.current().nextInt(1, 3 + 1), LocalDateTime.parse(String.format("201%s-12-30T19:34:50.63", ThreadLocalRandom.current().nextInt(0, 9 + 1))));
+        addTodo(String.format("Test %s ", currentId), ThreadLocalRandom.current().nextInt(1, 3 + 1), LocalDateTime.parse(String.format("201%s-12-30T19:34:50.63", ThreadLocalRandom.current().nextInt(0, 9 + 1))));
+        addTodo(String.format("Test %s ", currentId), ThreadLocalRandom.current().nextInt(1, 3 + 1), null);
+        addTodo(String.format("Test %s ", currentId), ThreadLocalRandom.current().nextInt(1, 3 + 1), LocalDateTime.parse(String.format("201%s-12-30T19:34:50.63", ThreadLocalRandom.current().nextInt(0, 9 + 1))));
+
+    }
+
+    
 }

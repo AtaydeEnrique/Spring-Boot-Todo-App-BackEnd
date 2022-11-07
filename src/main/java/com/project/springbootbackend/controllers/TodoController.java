@@ -19,15 +19,17 @@ import com.project.springbootbackend.services.TodoService;
 @RestController
 @CrossOrigin(origins = "http://localhost:8080")
 @RequestMapping(path = "todos")
-public class TodoController {   
-    
+public class TodoController {
+       
     @GetMapping()
-    ArrayList<TodoModel> todoList(@RequestParam(required = false, defaultValue = "") String sortBy,
+    ArrayList<Object> todoList(@RequestParam(required = false, defaultValue = "") String sortBy,
     @RequestParam(required = false, defaultValue = ",,") String filterBy,  
     @RequestParam(required = false, defaultValue = "") String direction, 
     @RequestParam(required = false, defaultValue = "0") Integer offset) {
-        
-        return TodoService.getAllTodos(sortBy, filterBy, direction,offset);
+        ArrayList<Object> res = new ArrayList<Object>();
+        res.add(TodoService.getAllTodos(sortBy, filterBy, direction,offset));
+        res.add(TodoService.getInfo());
+        return res;
     }
 
     @PostMapping()
@@ -54,6 +56,9 @@ public class TodoController {
         TodoService.deleteTodo(id);
     }
 
-
+    @GetMapping(path = "generate")
+    void generate() throws Exception{
+        TodoService.generateTest();
+    }
 
 }
