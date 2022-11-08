@@ -19,6 +19,8 @@ import com.project.springbootbackend.models.TodoModel;
 public class TodoService {
     
     @Autowired
+    public TodoService(){}
+
     static final ArrayList<TodoModel> todos = new ArrayList<TodoModel>();
     static final Map<String, Object> info = new HashMap<>();
     static final Map<String, Double> averages = new HashMap<>(Map.of(
@@ -33,7 +35,7 @@ public class TodoService {
     private static Long currentId = 1L;
 
 
-    public static ArrayList<TodoModel> getAllTodos(String sortBy, String filterBy, String direction, int offset) {
+    public ArrayList<TodoModel> getAllTodos(String sortBy, String filterBy, String direction, int offset) {
         String[] filters = filterBy.split(",");
         ArrayList<TodoModel> reference = new ArrayList<>(todos);
         var result = reference;
@@ -98,14 +100,14 @@ public class TodoService {
         }
     }
 
-    public static TodoModel addTodo( String name, Integer priority, LocalDateTime dueDate) throws Exception{
+    public TodoModel addTodo( String name, Integer priority, LocalDateTime dueDate) throws Exception{
         TodoModel newTodo = new TodoModel(currentId, name, priority, LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS), dueDate, null, false);
         currentId++;
         todos.add(newTodo);
         return newTodo;
     }
 
-    public static TodoModel updateTodo(Long id, TodoModel newTodo){
+    public TodoModel updateTodo(Long id, TodoModel newTodo){
 
         for (TodoModel todo : todos) {
             if (todo.getId().equals(id)) {
@@ -117,7 +119,7 @@ public class TodoService {
         return newTodo;
     }
 
-    public static void updateTodoDone(Long id){
+    public void updateTodoDone(Long id){
         for (TodoModel todo : todos) {
             if (todo.getId().equals(id)) {
                 var done = todo.getCompleted();
@@ -130,7 +132,7 @@ public class TodoService {
         calculateAverages();
     }
 
-    public static void updateTodoUndone(Long id){
+    public void updateTodoUndone(Long id){
         for (TodoModel todo : todos) {
             if (todo.getId().equals(id)) {
                 var done = todo.getCompleted();
@@ -143,11 +145,11 @@ public class TodoService {
         calculateAverages();
     }
 
-    public static void deleteTodo(Long id){
+    public void deleteTodo(Long id){
         todos.removeIf(curr -> curr.getId().equals(id));
     }
 
-    public static Object getInfo(){
+    public Object getInfo(){
         info.put("averages", averages);
         return info;
     }
@@ -156,7 +158,6 @@ public class TodoService {
         int totalLow = 0;
         int totalMed = 0;
         int totalHi = 0;
-        int totalAv = 0;
         double toSum;
 
         averages.put("hiAv",0.0);
@@ -170,7 +171,6 @@ public class TodoService {
                     if(todo.getCompletedDate() != null){
                         toSum = ChronoUnit.SECONDS.between(todo.getCreatedDate(), todo.getCompletedDate());
                         totalHi++;
-                        totalAv++;
                         averages.put("totalAv", averages.get("totalAv") + toSum);
                         averages.put("hiAv", averages.get("hiAv") + toSum);
                     }
@@ -180,7 +180,6 @@ public class TodoService {
                     if(todo.getCompletedDate() != null){
                         toSum = ChronoUnit.SECONDS.between(todo.getCreatedDate(), todo.getCompletedDate());
                         totalMed++;
-                        totalAv++;
                         averages.put("totalAv", averages.get("totalAv") + toSum);
                         averages.put("medAv", averages.get("medAv") + toSum);
                     }
@@ -190,7 +189,6 @@ public class TodoService {
                     if(todo.getCompletedDate() != null){
                         toSum = ChronoUnit.SECONDS.between(todo.getCreatedDate(), todo.getCompletedDate());
                         totalLow++;
-                        totalAv++;
                         averages.put("totalAv", averages.get("totalAv") + toSum);
                         averages.put("lowAv", averages.get("lowAv") + toSum);
 
@@ -199,7 +197,7 @@ public class TodoService {
                     break;
             }
             if(averages.get("totalAv") != 0.0){
-                averages.put("totalAv", averages.get("totalAv") / totalAv);
+                averages.put("totalAv", averages.get("totalAv"));
             }
             if(averages.get("hiAv") != 0.0){
                 averages.put("hiAv", averages.get("hiAv") / totalHi);
@@ -214,7 +212,7 @@ public class TodoService {
         }
     }
 
-    public static void generateTest() throws Exception{
+    public void generateTest() throws Exception{
         addTodo(String.format("Test %s ", currentId), ThreadLocalRandom.current().nextInt(1, 3 + 1), LocalDateTime.parse(String.format("201%s-12-30T19:34:50.63", ThreadLocalRandom.current().nextInt(0, 9 + 1))));
         addTodo(String.format("Test %s ", currentId), ThreadLocalRandom.current().nextInt(1, 3 + 1), LocalDateTime.parse(String.format("201%s-12-30T19:34:50.63", ThreadLocalRandom.current().nextInt(0, 9 + 1))));
         addTodo(String.format("Test %s ", currentId), ThreadLocalRandom.current().nextInt(1, 3 + 1), null);

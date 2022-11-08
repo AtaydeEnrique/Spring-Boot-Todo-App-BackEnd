@@ -15,6 +15,7 @@ public class TodoModel {
     private LocalDateTime completedDate;
     private Boolean completed;
 
+    public TodoModel(){}
     // Constructor
     public TodoModel(Long id, String name, Integer priority, 
                     LocalDateTime createdDate, LocalDateTime dueDate, 
