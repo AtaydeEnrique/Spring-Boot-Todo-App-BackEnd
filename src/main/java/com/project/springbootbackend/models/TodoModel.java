@@ -9,7 +9,7 @@ public class TodoModel {
     // Variables
     private Long id;
     private String name;
-    private Integer priority;
+    private int priority;
     private LocalDateTime dueDate;
     private LocalDateTime createdDate;
     private LocalDateTime completedDate;
@@ -17,7 +17,7 @@ public class TodoModel {
 
     public TodoModel(){}
     // Constructor
-    public TodoModel(Long id, String name, Integer priority, 
+    public TodoModel(Long id, String name, int priority, 
                     LocalDateTime createdDate, LocalDateTime dueDate, 
                     LocalDateTime completedDate, Boolean completed) throws Exception {
                       
@@ -28,11 +28,8 @@ public class TodoModel {
         this.dueDate = dueDate;
         this.completedDate = completedDate;
         this.completed = completed;
-        
-        try{
-        validate();}catch(Exception e){
-          e.printStackTrace();
-        }
+        // Validate cunstructor or throw an error
+        validate();
     } 
 
     // Variable getters and setters
@@ -52,11 +49,11 @@ public class TodoModel {
         this.name = name;
     }
 
-    public Integer getPriority() {
+    public int getPriority() {
         return priority;
     }
 
-    public void setPriority(Integer priority) {
+    public void setPriority(int priority) {
         this.priority = priority;
     }
 
@@ -98,26 +95,24 @@ public class TodoModel {
     private void validate() throws Exception {
         // Initialize array with all our errors if any.
         List<String> errors = new ArrayList<>();
-
         // Ensure our name is not null
-        ensureNotNull(name, "Name is null", errors);
+        ensureNotNull(name, "Name is null, please enter a valid name (1-120 char).", errors);
         
         // Check if our todo name is not empty and length between 1 and 120.
         if (!hasContent(name)) {
-          errors.add("Name has no content.");
+          errors.add("Name has no content, please enter a valid name (1-120 char).");
         }
 
         // Priority 1 = High, 2 = Medium, 3 = Low, value limiter
-        if (priority < 1 || priority > 3 || priority == null){
+        if (priority < 1 || priority > 3 ){
           errors.add("Priority must be an Integer in range from 1 to 3");
         }
-
 
         // We limit the ranges of of our completed Time varible.
         LocalDateTime START = LocalDateTime.of(1900, 1, 1, 00,00,00);
         LocalDateTime END = LocalDateTime.of(2099, 12, 31, 23,59,59);
         if (dueDate != null){
-          if (dueDate.isBefore(START) || dueDate.isAfter(END)) {
+          if (dueDate.isBefore(START) || dueDate.isAfter(END) || !(dueDate instanceof LocalDateTime)) {
             errors.add("Date is outside the normal range: " + START + ".." + END);
           }
         }
@@ -139,6 +134,7 @@ public class TodoModel {
           for(String error: errors) {
             ex.addSuppressed(new Exception(error));
           }
+
           throw ex;
         }
     }

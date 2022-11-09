@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
+import com.project.springbootbackend.enums.CompletedFlags;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -100,53 +101,82 @@ public class TodoService {
         }
     }
 
-    public TodoModel addTodo( String name, Integer priority, LocalDateTime dueDate) throws Exception{
-        TodoModel newTodo = new TodoModel(currentId, name, priority, LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS), dueDate, null, false);
+    public void addTodo( String name, Integer priority, LocalDateTime dueDate) throws Exception{
+        TodoModel newTodo = new TodoModel(currentId, name, priority, LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS), dueDate, null,  CompletedFlags.UNDONE);
         currentId++;
         todos.add(newTodo);
-        return newTodo;
+        
     }
 
-    public TodoModel updateTodo(Long id, TodoModel newTodo){
-
-        for (TodoModel todo : todos) {
-            if (todo.getId().equals(id)) {
-                todo.setName(newTodo.getName());
-                todo.setPriority(newTodo.getPriority());
-                todo.setdueDate(newTodo.getdueDate());
+    public void updateTodo(Long id, TodoModel newTodo) throws Exception{
+        // Quick validation
+        System.out.println("HOLA");
+        System.out.println(todos.size());
+        if(todos.size() != 0 && !todos.stream().filter(o -> o.getId().equals(id)).findFirst().isPresent()){
+            String name = newTodo.getName();
+            if(!( name != null && name.trim().length() > 0 && name.trim().length() < 120)){
+                throw new Exception("Invalid name! (1-120 chars)");
             }
-        }
-        return newTodo;
-    }
+            int prio = newTodo.getPriority();
+            if(prio < 1 || prio > 3 ){
+                throw new Exception("Invalid priority! (int 1-3)");
+            }
 
-    public void updateTodoDone(Long id){
-        for (TodoModel todo : todos) {
-            if (todo.getId().equals(id)) {
-                var done = todo.getCompleted();
-                if (!done){
-                    todo.setCompleted(true);
-                    todo.setCompletedDate(LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS));
+            for (TodoModel todo : todos) {
+                if (todo.getId().equals(id)) {
+                    todo.setName(name);
+                    todo.setPriority(newTodo.getPriority());
+                    todo.setdueDate(newTodo.getdueDate());
                 }
             }
+        } else{
+            System.out.println("HOLA2");
+
+            throw new Exception("Id doesnt Exist");
+            
         }
-        calculateAverages();
     }
 
-    public void updateTodoUndone(Long id){
-        for (TodoModel todo : todos) {
-            if (todo.getId().equals(id)) {
-                var done = todo.getCompleted();
-                if (done){
-                    todo.setCompleted(false);
-                    todo.setCompletedDate(null);
+    public void updateTodoDone(Long id) throws Exception{
+        if(todos.size() != 0 && todos.stream().filter(o -> o.getId().equals(id)).findFirst().isPresent()){
+            for (TodoModel todo : todos) {
+                if (todo.getId().equals(id)) {
+                    var done = todo.getCompleted();
+                    if (!done){
+                        todo.setCompleted(CompletedFlags.DONE );
+                        todo.setCompletedDate(LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS));
+                    }
                 }
             }
+            calculateAverages();
+        } else{
+            throw new Exception("Id doesnt Exist");
         }
-        calculateAverages();
     }
 
-    public void deleteTodo(Long id){
-        todos.removeIf(curr -> curr.getId().equals(id));
+    public void updateTodoUndone(Long id) throws Exception{
+        if(todos.size() != 0 && todos.stream().filter(o -> o.getId().equals(id)).findFirst().isPresent()){
+            for (TodoModel todo : todos) {
+                if (todo.getId().equals(id)) {
+                    var done = todo.getCompleted();
+                    if (done){
+                        todo.setCompleted(CompletedFlags.UNDONE);
+                        todo.setCompletedDate(null);
+                    }
+                }
+            }
+            calculateAverages();
+        } else{
+            throw new Exception("Id doesnt Exist");
+        }
+    }
+
+    public void deleteTodo(Long id) throws Exception{
+        if(todos.stream().filter(o -> o.getId().equals(id)).findFirst().isPresent()){
+            todos.removeIf(curr -> curr.getId().equals(id));
+        } else{
+            throw new Exception("Id doesnt Exist");
+        }
     }
 
     public Object getInfo(){
@@ -158,6 +188,9 @@ public class TodoService {
         int totalLow = 0;
         int totalMed = 0;
         int totalHi = 0;
+        int totalLowUndone = 0;
+        int totalMedUndone = 0;
+        int totalHiUndone = 0;
         double toSum;
 
         averages.put("hiAv",0.0);
@@ -165,14 +198,17 @@ public class TodoService {
         averages.put("lowAv",0.0);
         averages.put("totalAv",0.0);
 
+        /*  We first sum how many completed todo tasks are completed for each priority
+        The sum is made with the total time it takes to complete task by task with toSum variable*/
         for (TodoModel todo : todos) {
             switch(todo.getPriority()){
                 case 1:
                     if(todo.getCompletedDate() != null){
                         toSum = ChronoUnit.SECONDS.between(todo.getCreatedDate(), todo.getCompletedDate());
                         totalHi++;
-                        averages.put("totalAv", averages.get("totalAv") + toSum);
                         averages.put("hiAv", averages.get("hiAv") + toSum);
+                    } else{
+                        totalHiUndone++;
                     }
                     
                     break;
@@ -180,8 +216,9 @@ public class TodoService {
                     if(todo.getCompletedDate() != null){
                         toSum = ChronoUnit.SECONDS.between(todo.getCreatedDate(), todo.getCompletedDate());
                         totalMed++;
-                        averages.put("totalAv", averages.get("totalAv") + toSum);
                         averages.put("medAv", averages.get("medAv") + toSum);
+                    } else{
+                        totalMedUndone++;
                     }
                     
                     break;
@@ -189,16 +226,15 @@ public class TodoService {
                     if(todo.getCompletedDate() != null){
                         toSum = ChronoUnit.SECONDS.between(todo.getCreatedDate(), todo.getCompletedDate());
                         totalLow++;
-                        averages.put("totalAv", averages.get("totalAv") + toSum);
                         averages.put("lowAv", averages.get("lowAv") + toSum);
-
+                    } else{
+                        totalLowUndone++;
                     }
                     
                     break;
             }
-            if(averages.get("totalAv") != 0.0){
-                averages.put("totalAv", averages.get("totalAv"));
-            }
+            /* Once we have how many todos by priority we have and how long in total it took,
+            we divide totalsum / totaltasks */
             if(averages.get("hiAv") != 0.0){
                 averages.put("hiAv", averages.get("hiAv") / totalHi);
             }
@@ -208,18 +244,23 @@ public class TodoService {
             if(averages.get("lowAv") != 0.0){
                 averages.put("lowAv", averages.get("lowAv") / totalLow);
             }
-            
+
+            /* To get total average we multiply each givenAverage (low,hi,med) * TotalAmmount of not completed todos, 
+            then we sum all of them */
+            var average = (averages.get("hiAv") * totalHiUndone) + (averages.get("medAv") * totalMedUndone) + (averages.get("lowAv") * totalLowUndone);
+            averages.put("totalAv", average );
         }
     }
 
     public void generateTest() throws Exception{
-        addTodo(String.format("Test %s ", currentId), ThreadLocalRandom.current().nextInt(1, 3 + 1), LocalDateTime.parse(String.format("201%s-12-30T19:34:50.63", ThreadLocalRandom.current().nextInt(0, 9 + 1))));
-        addTodo(String.format("Test %s ", currentId), ThreadLocalRandom.current().nextInt(1, 3 + 1), LocalDateTime.parse(String.format("201%s-12-30T19:34:50.63", ThreadLocalRandom.current().nextInt(0, 9 + 1))));
+        addTodo(String.format("Test %s ", currentId), ThreadLocalRandom.current().nextInt(1, 3 + 1), LocalDateTime.parse("2022-11-12T19:34:50.63"));
+        addTodo(String.format("Test %s ", currentId), ThreadLocalRandom.current().nextInt(1, 3 + 1), LocalDateTime.parse("2022-11-19T19:34:50.63"));
+        addTodo(String.format("Test %s ", currentId), ThreadLocalRandom.current().nextInt(1, 3 + 1), LocalDateTime.parse(String.format("202%s-12-12T19:34:50.63", ThreadLocalRandom.current().nextInt(2, 3 + 1))));
         addTodo(String.format("Test %s ", currentId), ThreadLocalRandom.current().nextInt(1, 3 + 1), null);
-        addTodo(String.format("Test %s ", currentId), ThreadLocalRandom.current().nextInt(1, 3 + 1), LocalDateTime.parse(String.format("201%s-12-30T19:34:50.63", ThreadLocalRandom.current().nextInt(0, 9 + 1))));
-        addTodo(String.format("Test %s ", currentId), ThreadLocalRandom.current().nextInt(1, 3 + 1), LocalDateTime.parse(String.format("201%s-12-30T19:34:50.63", ThreadLocalRandom.current().nextInt(0, 9 + 1))));
+        addTodo(String.format("Test %s ", currentId), ThreadLocalRandom.current().nextInt(1, 3 + 1), LocalDateTime.parse(String.format("202%s-12-16T19:34:50.63", ThreadLocalRandom.current().nextInt(2, 3 + 1))));
+        addTodo(String.format("Test %s ", currentId), ThreadLocalRandom.current().nextInt(1, 3 + 1), LocalDateTime.parse(String.format("202%s-12-22T19:34:50.63", ThreadLocalRandom.current().nextInt(2, 3 + 1))));
         addTodo(String.format("Test %s ", currentId), ThreadLocalRandom.current().nextInt(1, 3 + 1), null);
-        addTodo(String.format("Test %s ", currentId), ThreadLocalRandom.current().nextInt(1, 3 + 1), LocalDateTime.parse(String.format("201%s-12-30T19:34:50.63", ThreadLocalRandom.current().nextInt(0, 9 + 1))));
+        addTodo(String.format("Test %s ", currentId), ThreadLocalRandom.current().nextInt(1, 3 + 1), LocalDateTime.parse(String.format("202%s-12-30T19:34:50.63", ThreadLocalRandom.current().nextInt(2, 3 + 1))));
 
     }
 

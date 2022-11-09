@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,7 +14,6 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.project.springbootbackend.models.TodoModel;
@@ -44,45 +44,54 @@ public class TodoController {
     }
 
     @PostMapping()
-    @ResponseStatus(code= HttpStatus.CREATED, reason = "Created")
-    TodoModel newTodo(@RequestBody TodoModel newTodo ) throws Exception {
+    ResponseEntity<?> newTodo(@RequestBody TodoModel newTodo ) throws Exception {
         try{
-            return todoService.addTodo(newTodo.getName(), newTodo.getPriority(), newTodo.getdueDate());
+            todoService.addTodo(newTodo.getName(), newTodo.getPriority(), newTodo.getdueDate());
+            return new ResponseEntity<>("Created", HttpStatus.CREATED);
         }catch(Exception e){
-            throw e;
+            return new ResponseEntity<>(e.getSuppressed()[0].getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
 
     @PutMapping(path = "{id}")
-    TodoModel updateTodo(@RequestBody TodoModel newTodo, @PathVariable Long id) throws Exception {
+    ResponseEntity<?> updateTodo(@RequestBody TodoModel newTodo, @PathVariable Long id) throws Exception {
         try{
-            return todoService.updateTodo(id, newTodo);
+            todoService.updateTodo(id, newTodo);
+            return new ResponseEntity<>("Updated", HttpStatus.CREATED);
         }catch(Exception e){
-            throw e;
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
 
     @PutMapping(path = "{id}/done")
-    void updateTodoDone(@PathVariable Long id) throws Exception {
+    ResponseEntity<?> updateTodoDone(@PathVariable Long id) throws Exception {
         try{
             todoService.updateTodoDone(id);
+            return new ResponseEntity<>("Updated", HttpStatus.OK);
         }catch(Exception e){
-            throw e;
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
         }
     }
 
     @PutMapping(path = "{id}/undone")
-    void updateTodoUnone(@PathVariable Long id) throws Exception {
+    ResponseEntity<?> updateTodoUnone(@PathVariable Long id) throws Exception {
         try{
             todoService.updateTodoUndone(id);
+            return new ResponseEntity<>("Updated", HttpStatus.OK);
         }catch(Exception e){
-            throw e;
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
         }
     }
 
     @DeleteMapping(path = "{id}")
-    void deleteTodo(@PathVariable Long id) {
-        todoService.deleteTodo(id);
+    ResponseEntity<?> deleteTodo(@PathVariable Long id) throws Exception {
+        try{
+            todoService.deleteTodo(id);
+            return new ResponseEntity<>("Deleted", HttpStatus.OK);
+        } catch (Exception e){
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+        }
+
     }
 
     @GetMapping(path = "generate")
@@ -90,4 +99,5 @@ public class TodoController {
         todoService.generateTest();
     }
 
+    
 }
