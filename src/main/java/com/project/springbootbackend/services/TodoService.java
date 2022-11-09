@@ -110,9 +110,8 @@ public class TodoService {
 
     public void updateTodo(Long id, TodoModel newTodo) throws Exception{
         // Quick validation
-        System.out.println("HOLA");
-        System.out.println(todos.size());
-        if(todos.size() != 0 && !todos.stream().filter(o -> o.getId().equals(id)).findFirst().isPresent()){
+
+        if(todos.size() != 0 && todos.stream().filter(o -> o.getId().equals(id)).findFirst().isPresent()){
             String name = newTodo.getName();
             if(!( name != null && name.trim().length() > 0 && name.trim().length() < 120)){
                 throw new Exception("Invalid name! (1-120 chars)");
@@ -130,8 +129,6 @@ public class TodoService {
                 }
             }
         } else{
-            System.out.println("HOLA2");
-
             throw new Exception("Id doesnt Exist");
             
         }
