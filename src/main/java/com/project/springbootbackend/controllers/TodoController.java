@@ -47,7 +47,7 @@ public class TodoController {
     ResponseEntity<?> newTodo(@RequestBody TodoModel newTodo ) throws Exception {
         try{
             todoService.addTodo(newTodo.getName(), newTodo.getPriority(), newTodo.getdueDate());
-            return new ResponseEntity<>("Created", HttpStatus.CREATED);
+            return new ResponseEntity<>(HttpStatus.CREATED);
         }catch(Exception e){
             return new ResponseEntity<>(e.getSuppressed()[0].getMessage(), HttpStatus.BAD_REQUEST);
         }
