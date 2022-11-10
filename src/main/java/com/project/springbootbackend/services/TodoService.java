@@ -93,7 +93,7 @@ public class TodoService {
         int end = ((result.size() < 10 * (offset + 1)) ? result.size() : 10 * (offset + 1));
         
         if(result.size() == 0){
-            return result;
+            return todos;
         }else{
             info.put("totalTodos", result.size());
             info.put("totalPages", (result.size() < 10 ? 1 :(int) (Math.ceil((double)result.size()/10))));
@@ -164,7 +164,7 @@ public class TodoService {
             }
             calculateAverages();
         } else{
-            throw new Exception("Id doesnt Exist");
+            throw new Exception("Id doesn't Exist");
         }
     }
 
@@ -172,7 +172,7 @@ public class TodoService {
         if(todos.stream().filter(o -> o.getId().equals(id)).findFirst().isPresent()){
             todos.removeIf(curr -> curr.getId().equals(id));
         } else{
-            throw new Exception("Id doesnt Exist");
+            throw new Exception("Id doesn't Exist");
         }
     }
 
@@ -258,10 +258,7 @@ public class TodoService {
         addTodo(String.format("Test %s ", currentId), ThreadLocalRandom.current().nextInt(1, 3 + 1), LocalDateTime.parse(String.format("202%s-12-22T19:34:50.63", ThreadLocalRandom.current().nextInt(2, 3 + 1))));
         addTodo(String.format("Test %s ", currentId), ThreadLocalRandom.current().nextInt(1, 3 + 1), null);
         addTodo(String.format("Test %s ", currentId), ThreadLocalRandom.current().nextInt(1, 3 + 1), LocalDateTime.parse(String.format("202%s-12-30T19:34:50.63", ThreadLocalRandom.current().nextInt(2, 3 + 1))));
-
     }
-
-    
 
     
 }
